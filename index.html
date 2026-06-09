@@ -1,0 +1,2748 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AUREA · La Sylphide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:            #06040302;
+  --bg-solid:      #060402;
+  --gold:          #c8982a;
+  --gold-light:    #e8c464;
+  --gold-dim:      rgba(200,152,42,0.35);
+  --gold-glow:     rgba(200,152,42,0.12);
+  --text:          #f0e8d0;
+  --text-dim:      rgba(240,232,208,0.52);
+  --glass:         rgba(255,255,255,0.038);
+  --glass-hov:     rgba(255,255,255,0.065);
+  --glass-border:  rgba(255,255,255,0.08);
+  --glass-gold:    rgba(200,152,42,0.22);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg-solid);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ════════════════════════════════════════════
+   LOADING SCREEN
+════════════════════════════════════════════ */
+#loading {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg-solid);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  transition: opacity 0.9s ease, visibility 0.9s ease;
+}
+#loading.out { opacity: 0; visibility: hidden; pointer-events: none; }
+
+.ld-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-weight: 300;
+  letter-spacing: 0.6em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+.ld-ornament {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--gold-dim);
+  font-size: 0.7rem;
+  letter-spacing: 0.5em;
+}
+.ld-ornament span { display: block; width: 40px; height: 1px; background: var(--gold-dim); }
+.ld-bar-track {
+  width: 180px;
+  height: 1px;
+  background: rgba(200,152,42,0.18);
+  border-radius: 1px;
+  overflow: hidden;
+}
+.ld-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+  width: 0%;
+  transition: width 0.15s ease;
+  border-radius: 1px;
+}
+.ld-pct {
+  font-size: 0.65rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  min-width: 8ch;
+  text-align: center;
+}
+
+/* ════════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════════ */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  padding: 0 2.5rem;
+  background: rgba(6,4,2,0.55);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.nav-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0.5em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-right: auto;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2.8rem;
+  list-style: none;
+  margin-right: 2.5rem;
+}
+.nav-links a {
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.nav-links a:hover { color: var(--text); }
+
+.nav-cta {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 300;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--glass-gold);
+  color: var(--gold);
+  padding: 0.48rem 1.4rem;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+.nav-cta:hover {
+  background: rgba(200,152,42,0.1);
+  border-color: var(--gold);
+  box-shadow: 0 0 18px rgba(200,152,42,0.15);
+}
+
+/* ════════════════════════════════════════════
+   SCROLL SECTION — sticky frame animation
+════════════════════════════════════════════ */
+#scroll-section { height: 550vh; position: relative; }
+
+.sticky-wrap {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#frame-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Warm ambient bokeh behind product */
+.bokeh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse 55% 55% at 50% 54%,
+      rgba(200,152,42,0.055) 0%, transparent 65%),
+    radial-gradient(ellipse 30% 40% at 35% 42%,
+      rgba(160,110,20,0.03) 0%, transparent 70%);
+}
+
+/* Edge vignette — blends product into page bg */
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    radial-gradient(ellipse 78% 72% at 50% 54%,
+      transparent 38%, rgba(6,4,2,0.62) 75%, rgba(6,4,2,0.97) 100%);
+}
+/* Top bar fade for nav area */
+.vignette::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 180px;
+  background: linear-gradient(to bottom, rgba(6,4,2,0.5), transparent);
+}
+
+/* Particle canvas */
+#particle-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Scroll progress ribbon */
+#scroll-ribbon {
+  position: absolute;
+  top: 0; right: 0;
+  width: 2px;
+  height: 0%;
+  background: linear-gradient(to bottom, transparent, var(--gold-dim), var(--gold));
+  z-index: 20;
+  border-radius: 0 0 2px 0;
+}
+
+/* ── Text overlay stages ─────────────────── */
+.stage {
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  will-change: opacity, transform;
+  max-width: 420px;
+}
+.stage.left  { left: 7vw; }
+.stage.right { right: 7vw; text-align: right; }
+
+#s0 { top: 22vh; }
+#s1 { top: 18vh; }
+#s2 { top: 48vh; }
+#s3 { top: 16vh; }
+#s4 {
+  bottom: 14vh;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  max-width: 500px;
+}
+
+.stage-tag {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1rem;
+}
+.stage-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(3rem, 5.5vw, 5rem);
+  font-weight: 300;
+  line-height: 1.05;
+  color: var(--text);
+  margin-bottom: 1.1rem;
+  text-shadow: 0 2px 40px rgba(6,4,2,0.7);
+}
+.stage-title em {
+  font-style: italic;
+  color: var(--gold-light);
+}
+.stage-body {
+  font-size: 0.8rem;
+  line-height: 2;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+.stage.right .stage-body { margin-left: auto; }
+
+/* Divider line accent */
+.stage-line {
+  display: block;
+  width: 36px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+  margin-bottom: 1rem;
+}
+.stage.right .stage-line {
+  margin-left: auto;
+  background: linear-gradient(270deg, var(--gold), transparent);
+}
+
+/* ── Scroll hint ─────────────────────────── */
+#scroll-hint {
+  position: absolute;
+  bottom: 2.8rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  transition: opacity 0.7s ease;
+}
+#scroll-hint.gone { opacity: 0; pointer-events: none; }
+.hint-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.hint-line {
+  width: 1px;
+  height: 44px;
+  background: linear-gradient(to bottom, var(--gold), transparent);
+  animation: hintPulse 1.8s ease-in-out infinite;
+}
+@keyframes hintPulse {
+  0%, 100% { opacity: 1; transform: scaleY(1); }
+  50%       { opacity: 0.3; transform: scaleY(0.55); }
+}
+
+/* ════════════════════════════════════════════
+   SIDE PANEL — fixed glass panel, right side
+════════════════════════════════════════════ */
+#side-panel {
+  position: fixed;
+  right: 1.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+  pointer-events: none;
+}
+#side-panel.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sp-price-card {
+  background: var(--glass);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1.1rem 1.3rem;
+  text-align: center;
+  cursor: default;
+}
+.sp-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+}
+.sp-price-label {
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-top: 0.25rem;
+}
+
+.sp-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--glass);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid var(--glass-border);
+  border-radius: 13px;
+  padding: 0.78rem 1.1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.64rem;
+  font-weight: 300;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.3s, border-color 0.3s, color 0.3s, transform 0.3s;
+  white-space: nowrap;
+}
+.sp-btn:hover {
+  background: var(--glass-hov);
+  border-color: var(--glass-gold);
+  color: var(--text);
+  transform: translateX(-3px);
+}
+.sp-btn.gold {
+  background: rgba(200,152,42,0.1);
+  border-color: var(--glass-gold);
+  color: var(--gold);
+}
+.sp-btn.gold:hover {
+  background: rgba(200,152,42,0.2);
+  border-color: var(--gold);
+  box-shadow: 0 0 22px rgba(200,152,42,0.2);
+  transform: translateX(-3px);
+}
+.sp-icon { font-size: 0.9rem; line-height: 1; }
+
+/* ════════════════════════════════════════════
+   FEATURES SECTION
+════════════════════════════════════════════ */
+#features {
+  background: var(--bg-solid);
+  padding: 9rem 7vw 8rem;
+  position: relative;
+  overflow: hidden;
+}
+#features::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 500px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-gold), transparent);
+}
+/* Subtle noise texture via repeating-gradient */
+#features::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(200,152,42,0.025) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 50% at 20% 80%, rgba(200,152,42,0.02) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.feat-header {
+  text-align: center;
+  margin-bottom: 5rem;
+  position: relative;
+  z-index: 1;
+}
+.feat-header .tag {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.1rem;
+}
+.feat-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.feat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.4rem;
+  max-width: 860px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.feat-card {
+  background: var(--glass);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+  border-radius: 22px;
+  padding: 2.4rem 2rem 2rem;
+  transition: background 0.4s, border-color 0.4s, transform 0.4s;
+}
+.feat-card:hover {
+  background: var(--glass-hov);
+  border-color: rgba(200,152,42,0.28);
+  transform: translateY(-5px);
+}
+
+.feat-card-icon {
+  font-size: 1.6rem;
+  margin-bottom: 1.2rem;
+  display: block;
+  filter: drop-shadow(0 0 10px rgba(200,152,42,0.45));
+}
+.feat-card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-weight: 300;
+  color: var(--text);
+  margin-bottom: 0.65rem;
+  line-height: 1.2;
+}
+.feat-card-desc {
+  font-size: 0.78rem;
+  line-height: 1.95;
+  color: var(--text-dim);
+}
+.feat-stat {
+  margin-top: 1.4rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.4rem;
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+}
+.feat-stat-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-top: 0.2rem;
+}
+
+/* ════════════════════════════════════════════
+   CTA SECTION
+════════════════════════════════════════════ */
+#cta {
+  padding: 10rem 7vw 9rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+#cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 50%,
+      rgba(200,152,42,0.045) 0%, transparent 70%);
+  pointer-events: none;
+}
+#cta .sep-line {
+  width: 1px; height: 60px;
+  background: linear-gradient(to bottom, transparent, var(--gold-dim), transparent);
+  margin: 0 auto 3.5rem;
+  display: block;
+}
+
+.cta-tag {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 2rem;
+}
+.cta-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(3rem, 5vw, 4.2rem);
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+.cta-price-sub {
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 2.5rem;
+  display: block;
+}
+.cta-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.8rem, 4.5vw, 4rem);
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1.12;
+  margin-bottom: 1.3rem;
+}
+.cta-title em { font-style: italic; color: var(--gold-light); }
+.cta-body {
+  font-size: 0.82rem;
+  line-height: 1.9;
+  color: var(--text-dim);
+  max-width: 380px;
+  margin: 0 auto 3.2rem;
+}
+
+.cta-btns {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.btn-prim {
+  padding: 0.95rem 3rem;
+  background: linear-gradient(135deg, rgba(200,152,42,0.28), rgba(232,196,100,0.16));
+  border: 1px solid var(--gold);
+  border-radius: 100px;
+  color: var(--gold-light);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: box-shadow 0.4s, transform 0.4s, background 0.4s;
+}
+.btn-prim:hover {
+  background: linear-gradient(135deg, rgba(200,152,42,0.4), rgba(232,196,100,0.24));
+  box-shadow: 0 0 50px rgba(200,152,42,0.28), 0 0 100px rgba(200,152,42,0.1);
+  transform: translateY(-2px);
+}
+.btn-sec {
+  padding: 0.95rem 2.2rem;
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  border-radius: 100px;
+  color: var(--text-dim);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 300;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.3s, color 0.3s;
+}
+.btn-sec:hover { border-color: var(--glass-gold); color: var(--text); }
+
+/* ════════════════════════════════════════════
+   FOOTER
+════════════════════════════════════════════ */
+footer {
+  border-top: 1px solid var(--glass-border);
+  padding: 1.8rem 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(6,4,2,0.9);
+}
+.foot-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  letter-spacing: 0.5em;
+  color: var(--gold);
+  font-weight: 300;
+}
+.foot-copy {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+}
+
+/* ════════════════════════════════════════════
+   MUSIC BUTTON
+════════════════════════════════════════════ */
+#music-btn {
+  position: fixed;
+  bottom: 2rem;
+  left: 2rem;
+  z-index: 500;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--glass);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  outline: none;
+}
+#music-btn:hover {
+  border-color: var(--glass-gold);
+  background: var(--glass-hov);
+  color: var(--gold);
+}
+#music-btn.playing {
+  border-color: rgba(200,152,42,0.5);
+  color: var(--gold);
+  animation: musicGlow 2.4s ease-in-out infinite;
+}
+@keyframes musicGlow {
+  0%,100% { box-shadow: 0 0 16px rgba(200,152,42,0.15), 0 0 32px rgba(200,152,42,0.06); }
+  50%      { box-shadow: 0 0 28px rgba(200,152,42,0.28), 0 0 56px rgba(200,152,42,0.12); }
+}
+.music-tooltip {
+  position: absolute;
+  left: calc(100% + 0.8rem);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+#music-btn:hover .music-tooltip { opacity: 1; }
+
+/* ════════════════════════════════════════════
+   SECTION REVEAL ANIMATION
+════════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.85s ease, transform 0.85s ease;
+}
+.reveal.in { opacity: 1; transform: translateY(0); }
+
+/* ════════════════════════════════════════════
+   SHARED UTILITIES — new sections
+════════════════════════════════════════════ */
+.sec-tag {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.1rem;
+}
+.sec-divider {
+  width: 500px;
+  max-width: 80vw;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-gold), transparent);
+  margin: 0 auto;
+  display: block;
+}
+
+/* ════════════════════════════════════════════
+   ABOUT SECTION
+════════════════════════════════════════════ */
+#about {
+  background: #080604;
+  padding: 9rem 7vw 8rem;
+  position: relative;
+  overflow: hidden;
+}
+#about::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 500px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-gold), transparent);
+}
+#about::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 50% 40% at 90% 15%, rgba(200,152,42,0.022) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 35% at 10% 80%, rgba(200,152,42,0.018) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.about-pullquote {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 7rem;
+  position: relative;
+  z-index: 1;
+}
+.about-ornament {
+  display: block;
+  font-size: 1.2rem;
+  color: var(--gold-dim);
+  margin-bottom: 1.8rem;
+  letter-spacing: 0.5em;
+}
+.about-pullquote blockquote {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  font-style: italic;
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1.6;
+  margin-bottom: 1.2rem;
+}
+.about-pullquote cite {
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-style: normal;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.about-story h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 3.2vw, 2.8rem);
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1.15;
+  margin-bottom: 1.8rem;
+}
+.about-story h2 em { font-style: italic; color: var(--gold-light); }
+.about-story p {
+  font-size: 0.82rem;
+  line-height: 2.05;
+  color: var(--text-dim);
+  margin-bottom: 1.2rem;
+}
+.about-story p:last-child { margin-bottom: 0; }
+
+.about-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+.about-stat {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1.4rem 1rem;
+  text-align: center;
+  transition: border-color 0.3s, background 0.3s;
+}
+.about-stat:hover {
+  background: var(--glass-hov);
+  border-color: rgba(200,152,42,0.22);
+}
+.stat-num {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 0.35rem;
+}
+.stat-label {
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.about-values {
+  display: flex;
+  flex-direction: column;
+  gap: 0.88rem;
+}
+.about-value {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  font-size: 0.78rem;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+.value-dot {
+  color: var(--gold-dim);
+  font-size: 0.45rem;
+  margin-top: 0.42rem;
+  flex-shrink: 0;
+}
+
+/* ════════════════════════════════════════════
+   PRODUCT SECTION
+════════════════════════════════════════════ */
+#product {
+  background: var(--bg-solid);
+  padding: 9rem 7vw 8rem;
+  position: relative;
+  overflow: hidden;
+}
+#product::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 500px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-gold), transparent);
+}
+
+.product-inner {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 5.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.product-img-wrap {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+}
+.product-img {
+  width: 100%;
+  display: block;
+  border-radius: 24px;
+  filter: brightness(0.94);
+}
+.product-img-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 65% 60% at 50% 52%,
+    rgba(200,152,42,0.07) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.product-badges {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+  flex-wrap: wrap;
+}
+.badge {
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid var(--glass-gold);
+  border-radius: 100px;
+  padding: 0.28rem 0.9rem;
+  background: rgba(200,152,42,0.07);
+}
+
+.product-detail-col h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.2rem, 3.2vw, 2.9rem);
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+.product-detail-col h2 em { font-style: italic; color: var(--gold-light); }
+
+.product-intro {
+  font-size: 0.82rem;
+  line-height: 2;
+  color: var(--text-dim);
+  margin-bottom: 2rem;
+}
+
+.spec-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+.spec-item {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  background: var(--glass);
+  transition: background 0.25s;
+}
+.spec-item:nth-child(odd)       { border-right: 1px solid var(--glass-border); }
+.spec-item:nth-last-child(-n+2) { border-bottom: none; }
+.spec-item:hover                { background: var(--glass-hov); }
+.spec-key {
+  font-size: 0.56rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.spec-val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: var(--text);
+}
+
+.includes-label {
+  display: block;
+  font-size: 0.58rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 0.9rem;
+}
+.includes-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.chip {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 0.32rem 0.75rem;
+  background: var(--glass);
+  transition: border-color 0.3s, color 0.3s;
+  cursor: default;
+}
+.chip:hover { border-color: var(--glass-gold); color: var(--text); }
+
+/* ════════════════════════════════════════════
+   PRICING SECTION
+════════════════════════════════════════════ */
+#pricing {
+  background: #080604;
+  padding: 9rem 5vw 8rem;
+  position: relative;
+  overflow: hidden;
+}
+#pricing::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 500px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-gold), transparent);
+}
+#pricing::after {
+  content: '';
+  position: absolute;
+  top: 40%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px; height: 600px;
+  background: radial-gradient(ellipse at center, rgba(200,152,42,0.032) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.pricing-header {
+  text-align: center;
+  margin-bottom: 5rem;
+  position: relative;
+  z-index: 1;
+}
+.pricing-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+.pricing-header h2 em { font-style: italic; color: var(--gold-light); }
+.pricing-sub {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  line-height: 1.9;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.pricing-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4rem;
+  max-width: 1060px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  align-items: start;
+}
+
+.pricing-card {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 2.4rem 1.8rem;
+  position: relative;
+  transition: border-color 0.4s, transform 0.4s, background 0.4s, box-shadow 0.4s;
+}
+.pricing-card:hover {
+  background: var(--glass-hov);
+  border-color: rgba(200,152,42,0.22);
+  transform: translateY(-5px);
+}
+.pricing-card.featured {
+  border-color: var(--glass-gold);
+  background: rgba(200,152,42,0.058);
+  box-shadow: 0 0 60px rgba(200,152,42,0.09), 0 0 120px rgba(200,152,42,0.04);
+  transform: translateY(-10px);
+}
+.pricing-card.featured:hover {
+  transform: translateY(-16px);
+  box-shadow: 0 0 90px rgba(200,152,42,0.14), 0 0 180px rgba(200,152,42,0.06);
+}
+
+.pc-badge {
+  position: absolute;
+  top: -1px; left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: #060402;
+  font-size: 0.56rem;
+  font-weight: 400;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  padding: 0.28rem 1.1rem;
+  border-radius: 0 0 10px 10px;
+  white-space: nowrap;
+}
+
+.pc-edition {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.8rem;
+  font-weight: 300;
+  color: var(--gold-dim);
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+.pc-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-weight: 300;
+  color: var(--text);
+  margin-bottom: 0.28rem;
+}
+.pc-ballerina {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.pc-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem;
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+.pricing-card.featured .pc-price { color: var(--gold-light); }
+.pc-price-note {
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+  margin-bottom: 1.8rem;
+  text-transform: uppercase;
+}
+
+.pc-features {
+  list-style: none;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.pc-features li {
+  font-size: 0.77rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+.pc-features li::before {
+  content: '◆';
+  color: var(--gold-dim);
+  font-size: 0.42rem;
+  margin-top: 0.42rem;
+  flex-shrink: 0;
+}
+.pricing-card.featured .pc-features li       { color: rgba(240,232,208,0.78); }
+.pricing-card.featured .pc-features li::before { color: var(--gold); }
+
+.pc-btn {
+  width: 100%;
+  padding: 0.82rem;
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-dim);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.pc-btn:hover {
+  border-color: var(--glass-gold);
+  color: var(--gold);
+  background: rgba(200,152,42,0.06);
+}
+.pc-btn.featured-btn {
+  background: linear-gradient(135deg, rgba(200,152,42,0.28), rgba(232,196,100,0.15));
+  border-color: var(--gold);
+  color: var(--gold-light);
+}
+.pc-btn.featured-btn:hover {
+  background: linear-gradient(135deg, rgba(200,152,42,0.42), rgba(232,196,100,0.25));
+  box-shadow: 0 0 30px rgba(200,152,42,0.22);
+}
+
+/* ════════════════════════════════════════════
+   ABOUT — founder signature
+════════════════════════════════════════════ */
+.about-signature {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--glass-border);
+}
+.about-signature-name {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--gold-light);
+  margin-bottom: 0.28rem;
+}
+.about-signature-role {
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* ════════════════════════════════════════════
+   COLLECTION SECTION
+════════════════════════════════════════════ */
+#collection {
+  background: #080604;
+  padding: 9rem 7vw 8rem;
+  position: relative;
+  overflow: hidden;
+}
+#collection::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 500px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-gold), transparent);
+}
+#collection::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 55% 40% at 50% 60%, rgba(200,152,42,0.025) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.collection-header {
+  text-align: center;
+  margin-bottom: 5rem;
+  position: relative;
+  z-index: 1;
+}
+.collection-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+.collection-header h2 em { font-style: italic; color: var(--gold-light); }
+.collection-sub {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  line-height: 1.9;
+  max-width: 440px;
+  margin: 0 auto;
+}
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+.product-card {
+  background: var(--glass);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+  border-radius: 22px;
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.4s, transform 0.4s, box-shadow 0.4s;
+}
+.product-card:hover {
+  border-color: rgba(200,152,42,0.28);
+  transform: translateY(-7px);
+  box-shadow: 0 24px 70px rgba(0,0,0,0.45), 0 0 40px rgba(200,152,42,0.07);
+}
+.product-card-img-wrap {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+}
+.product-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.65s ease;
+  filter: brightness(0.9);
+}
+.product-card:hover .product-card-img { transform: scale(1.07); }
+.product-card-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 45%, rgba(6,4,2,0.88) 100%);
+  pointer-events: none;
+}
+.product-card-badge {
+  position: absolute;
+  top: 1rem; right: 1rem;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: #060402;
+  font-size: 0.54rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.9rem;
+  border-radius: 100px;
+  z-index: 2;
+}
+.product-card-body {
+  padding: 1.6rem 1.6rem 2rem;
+}
+.product-card-edition {
+  font-size: 0.58rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.35rem;
+}
+.product-card-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.55rem;
+  font-weight: 300;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+  line-height: 1.1;
+}
+.product-card-desc {
+  font-size: 0.75rem;
+  line-height: 1.88;
+  color: var(--text-dim);
+  margin-bottom: 1.3rem;
+}
+.product-card-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem;
+  font-weight: 300;
+  color: var(--gold-light);
+  margin-bottom: 0.2rem;
+}
+.product-card-price-note {
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 1.2rem;
+}
+.product-card-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  color: var(--text-dim);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 300;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.product-card-btn:hover {
+  border-color: var(--glass-gold);
+  color: var(--gold);
+  background: rgba(200,152,42,0.06);
+}
+.product-card.featured-card .product-card-btn {
+  background: linear-gradient(135deg, rgba(200,152,42,0.25), rgba(232,196,100,0.12));
+  border-color: var(--gold);
+  color: var(--gold-light);
+}
+
+/* ════════════════════════════════════════════
+   PRICING — feature dim (not included)
+════════════════════════════════════════════ */
+.pc-features li.not-included {
+  color: rgba(240,232,208,0.2);
+  pointer-events: none;
+}
+.pc-features li.not-included::before {
+  content: '○';
+  color: rgba(255,255,255,0.1);
+}
+
+/* ════════════════════════════════════════════
+   TESTIMONIALS SECTION
+════════════════════════════════════════════ */
+#testimonials {
+  background: var(--bg-solid);
+  padding: 9rem 7vw 8rem;
+  position: relative;
+  overflow: hidden;
+}
+#testimonials::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 500px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-gold), transparent);
+}
+#testimonials::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 55% 45% at 50% 50%, rgba(200,152,42,0.022) 0%, transparent 70%);
+  pointer-events: none;
+}
+.testimonials-header {
+  text-align: center;
+  margin-bottom: 5rem;
+  position: relative;
+  z-index: 1;
+}
+.testimonials-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+.testimonials-header h2 em { font-style: italic; color: var(--gold-light); }
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 1060px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+.testimonial-card {
+  background: var(--glass);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+  border-radius: 22px;
+  padding: 2.2rem 2rem;
+  transition: border-color 0.4s, transform 0.4s;
+}
+.testimonial-card:hover {
+  border-color: rgba(200,152,42,0.2);
+  transform: translateY(-4px);
+}
+.testimonial-quote-mark {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 4.5rem;
+  line-height: 0.6;
+  color: var(--gold-dim);
+  margin-bottom: 1.2rem;
+  display: block;
+}
+.testimonial-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1.75;
+  margin-bottom: 1.6rem;
+}
+.testimonial-stars {
+  display: flex;
+  gap: 0.2rem;
+  margin-bottom: 1.2rem;
+  color: var(--gold);
+  font-size: 0.7rem;
+}
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  border-top: 1px solid var(--glass-border);
+  padding-top: 1.2rem;
+}
+.testimonial-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(200,152,42,0.18), rgba(200,152,42,0.04));
+  border: 1px solid var(--glass-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  color: var(--gold);
+  font-weight: 300;
+  flex-shrink: 0;
+}
+.testimonial-name {
+  font-size: 0.8rem;
+  color: var(--text);
+  margin-bottom: 0.15rem;
+}
+.testimonial-location {
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* ════════════════════════════════════════════
+   FAQ SECTION
+════════════════════════════════════════════ */
+#faq {
+  background: #080604;
+  padding: 9rem 7vw 8rem;
+  position: relative;
+  overflow: hidden;
+}
+#faq::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 500px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-gold), transparent);
+}
+.faq-header {
+  text-align: center;
+  margin-bottom: 5rem;
+  position: relative;
+  z-index: 1;
+}
+.faq-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+.faq-header h2 em { font-style: italic; color: var(--gold-light); }
+.faq-list {
+  max-width: 760px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.faq-item {
+  background: var(--glass);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+.faq-item.open { border-color: rgba(200,152,42,0.25); }
+.faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.3rem 1.6rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-weight: 300;
+  transition: color 0.3s;
+}
+.faq-item.open .faq-question { color: var(--gold-light); }
+.faq-icon {
+  flex-shrink: 0;
+  width: 22px; height: 22px;
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: var(--gold-dim);
+  transition: transform 0.35s ease, border-color 0.3s, color 0.3s;
+  line-height: 1;
+}
+.faq-item.open .faq-icon {
+  transform: rotate(45deg);
+  border-color: var(--glass-gold);
+  color: var(--gold);
+}
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.42s ease;
+}
+.faq-answer-inner {
+  padding: 0 1.6rem 1.5rem;
+  font-size: 0.82rem;
+  line-height: 2;
+  color: var(--text-dim);
+}
+
+/* ════════════════════════════════════════════
+   FOOTER — 4-column (overrides old rules)
+════════════════════════════════════════════ */
+footer {
+  border-top: 1px solid var(--glass-border);
+  background: rgba(4,3,2,0.96);
+  padding: 4.5rem 7vw 2.5rem;
+}
+.footer-inner {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr 1fr 1fr;
+  gap: 4rem;
+  max-width: 1100px;
+  margin: 0 auto 3rem;
+}
+.footer-brand .foot-logo {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.5em;
+  color: var(--gold);
+  font-weight: 300;
+  text-decoration: none;
+  margin-bottom: 1.1rem;
+}
+.footer-brand-desc {
+  font-size: 0.75rem;
+  line-height: 2;
+  color: var(--text-dim);
+  max-width: 240px;
+  margin-bottom: 1.4rem;
+}
+.footer-brand-ornament {
+  font-size: 0.58rem;
+  letter-spacing: 0.38em;
+  color: var(--gold-dim);
+  text-transform: uppercase;
+}
+.footer-col-title {
+  display: block;
+  font-size: 0.6rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.3rem;
+}
+.footer-col-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.footer-col-links a {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.footer-col-links a:hover { color: var(--gold); }
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 2rem;
+  border-top: 1px solid var(--glass-border);
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.foot-copy {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+.footer-social {
+  display: flex;
+  gap: 1.2rem;
+}
+.footer-social a {
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.footer-social a:hover { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<!-- ── LOADING SCREEN ─────────────────────────────────── -->
+<div id="loading">
+  <div class="ld-logo">Aurea</div>
+  <div class="ld-ornament"><span></span>Atelier<span></span></div>
+  <div class="ld-bar-track"><div class="ld-bar-fill" id="ld-fill"></div></div>
+  <div class="ld-pct" id="ld-pct">0%</div>
+</div>
+
+<!-- ── NAVIGATION ────────────────────────────────────── -->
+<nav>
+  <a class="nav-logo" href="#">Aurea</a>
+  <ul class="nav-links">
+    <li><a href="#scroll-section">Discover</a></li>
+    <li><a href="#about">Story</a></li>
+    <li><a href="#collection">Collection</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#testimonials">Reviews</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <button class="nav-cta" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">Enquire</button>
+</nav>
+
+<!-- ── SCROLL-DRIVEN HERO ─────────────────────────────── -->
+<section id="scroll-section">
+  <div class="sticky-wrap">
+
+    <canvas id="frame-canvas"></canvas>
+    <div class="bokeh"></div>
+    <canvas id="particle-canvas"></canvas>
+    <div class="vignette"></div>
+    <div id="scroll-ribbon"></div>
+
+    <!-- Stage 0 · Closed exterior · 0–18% -->
+    <div class="stage left" id="s0">
+      <span class="stage-tag">Collection 2025</span>
+      <span class="stage-line"></span>
+      <h1 class="stage-title">La <em>Sylphide</em></h1>
+      <p class="stage-body">A baroque music box that transcends time.<br>
+        Hand-carved walnut. 24k gilded brass.<br>
+        A porcelain dancer born from dreams.</p>
+    </div>
+
+    <!-- Stage 1 · Box opening · 20–40% -->
+    <div class="stage right" id="s1">
+      <span class="stage-tag">Baroque Mastery</span>
+      <span class="stage-line"></span>
+      <h2 class="stage-title">Carved<br>in <em>Walnut</em></h2>
+      <p class="stage-body">Each acanthus panel hand-chiselled over<br>
+        twelve hours. Faithful to 18th-century<br>
+        Rococo tradition. No two alike.</p>
+    </div>
+
+    <!-- Stage 2 · Mechanism revealed · 42–63% -->
+    <div class="stage left" id="s2">
+      <span class="stage-tag">Mechanical Soul</span>
+      <span class="stage-line"></span>
+      <h2 class="stage-title">The <em>Heart</em><br>Within</h2>
+      <p class="stage-body">37 hand-fitted brass components.<br>
+        Swiss-inspired clockwork precision, tuned<br>
+        to play Tchaikovsky's Swan Lake.</p>
+    </div>
+
+    <!-- Stage 3 · White ballerina · 65–83% -->
+    <div class="stage right" id="s3">
+      <span class="stage-tag">The Dance</span>
+      <span class="stage-line"></span>
+      <h2 class="stage-title">She<br><em>Awakens</em></h2>
+      <p class="stage-body">A hand-painted porcelain ballerina rises<br>
+        from silence. Each rotation a breath.<br>
+        Each spin, a meditation on grace.</p>
+    </div>
+
+    <!-- Stage 4 · Blue ballerina · 85–99% -->
+    <div class="stage" id="s4">
+      <span class="stage-tag">La Sylphide II</span>
+      <span class="stage-line" style="margin: 0 auto 1rem;"></span>
+      <h2 class="stage-title"><em>A New</em><br>Chapter Awakens</h2>
+      <p class="stage-body" style="margin:0 auto;">
+        The second movement. A blue tutu, a different story.<br>
+        Every Aurea piece is individually numbered.</p>
+    </div>
+
+    <!-- Scroll hint -->
+    <div id="scroll-hint">
+      <span class="hint-label">Scroll to explore</span>
+      <div class="hint-line"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── FEATURES GRID ──────────────────────────────────── -->
+<section id="features">
+  <div class="feat-header">
+    <span class="tag reveal">The Aurea Difference</span>
+    <h2 class="reveal" style="transition-delay:0.1s">Crafted without<br>compromise</h2>
+  </div>
+
+  <div class="feat-grid">
+    <div class="feat-card reveal" style="transition-delay:0.05s">
+      <span class="feat-card-icon">🌳</span>
+      <div class="feat-card-title">Century-Old Walnut</div>
+      <p class="feat-card-desc">Sourced from sustainably managed forests, each plank is aged a minimum of five years before carving begins — ensuring structural integrity and a resonant, warm tone.</p>
+      <div class="feat-stat">5+</div>
+      <div class="feat-stat-label">Years of wood aging</div>
+    </div>
+
+    <div class="feat-card reveal" style="transition-delay:0.15s">
+      <span class="feat-card-icon">⚙️</span>
+      <div class="feat-card-title">Swiss Clockwork</div>
+      <p class="feat-card-desc">Inspired by Swiss horological tradition. 37 individual brass components, individually polished and calibrated by hand before final assembly.</p>
+      <div class="feat-stat">37</div>
+      <div class="feat-stat-label">Brass components</div>
+    </div>
+
+    <div class="feat-card reveal" style="transition-delay:0.25s">
+      <span class="feat-card-icon">✦</span>
+      <div class="feat-card-title">Baroque Ornament</div>
+      <p class="feat-card-desc">Gold-plated acanthus leaves, hand-carved in high relief. Each ornamental panel requires up to twelve hours of meticulous chisel work by a master craftsman.</p>
+      <div class="feat-stat">240</div>
+      <div class="feat-stat-label">Hours per piece</div>
+    </div>
+
+    <div class="feat-card reveal" style="transition-delay:0.35s">
+      <span class="feat-card-icon">♾</span>
+      <div class="feat-card-title">Numbered Legacy</div>
+      <p class="feat-card-desc">Every Aurea piece carries a unique serial number and certificate of authenticity. Personalized engravings available — a name, a date, a story that endures for generations.</p>
+      <div class="feat-stat">∞</div>
+      <div class="feat-stat-label">Generational heirloom</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ABOUT SECTION ──────────────────────────────────── -->
+<section id="about">
+
+  <div class="about-pullquote reveal">
+    <span class="about-ornament">❋ · ❋ · ❋</span>
+    <blockquote>
+      "We do not simply make music boxes.<br>
+      We preserve moments in walnut and gold."
+    </blockquote>
+    <cite>— Henri Dumont, Founding Master Craftsman, Aurea Atelier</cite>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-story reveal">
+      <span class="sec-tag">Our Story</span>
+      <h2>Born from a<br><em>Singular Obsession</em></h2>
+      <p>In 1987, master woodworker Henri Dumont and Swiss horologist Marie Leclerc shared a single conviction: the world's most cherished objects were being surrendered to machines. Aurea Atelier was their quiet refusal.</p>
+      <p>From a small workshop in Lyon, their philosophy spread through private collectors' circles across Europe, Japan, and the Americas. Today, twelve master craftsmen continue the tradition — each piece requiring a minimum of 240 hours to complete by hand.</p>
+      <p>We accept no compromises. We use no substitutes. Every grain of walnut, every tooth of every gear, every curl of gilded acanthus is considered, weighed, and placed by human hands alone.</p>
+      <div class="about-signature">
+        <span class="about-signature-name">Henri Dumont</span>
+        <span class="about-signature-role">Founding Master · Aurea Atelier · Lyon, 1923</span>
+      </div>
+    </div>
+
+    <div class="about-stats-col reveal" style="transition-delay:0.15s">
+      <div class="about-stat-grid">
+        <div class="about-stat">
+          <span class="stat-num">1923</span>
+          <span class="stat-label">Established</span>
+        </div>
+        <div class="about-stat">
+          <span class="stat-num">47</span>
+          <span class="stat-label">Pieces / Year</span>
+        </div>
+        <div class="about-stat">
+          <span class="stat-num">36</span>
+          <span class="stat-label">Musical Notes</span>
+        </div>
+        <div class="about-stat">
+          <span class="stat-num">28</span>
+          <span class="stat-label">Countries</span>
+        </div>
+      </div>
+
+      <div class="about-values">
+        <div class="about-value">
+          <span class="value-dot">◆</span>
+          <span>No power tools used in ornamental carving</span>
+        </div>
+        <div class="about-value">
+          <span class="value-dot">◆</span>
+          <span>Only sustainably sourced, aged materials</span>
+        </div>
+        <div class="about-value">
+          <span class="value-dot">◆</span>
+          <span>Lifetime repair and maintenance service</span>
+        </div>
+        <div class="about-value">
+          <span class="value-dot">◆</span>
+          <span>Every piece individually numbered and notarised</span>
+        </div>
+        <div class="about-value">
+          <span class="value-dot">◆</span>
+          <span>Carbon-neutral workshop since 2014</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ── COLLECTION SECTION ─────────────────────────────── -->
+<section id="collection">
+
+  <div class="collection-header">
+    <span class="sec-tag reveal">2025 Collection</span>
+    <h2 class="reveal" style="transition-delay:0.1s">Three Editions,<br><em>One Obsession</em></h2>
+    <p class="collection-sub reveal" style="transition-delay:0.18s">Each piece is hand-crafted to order in our Lyon atelier. Select the edition that belongs to you.</p>
+  </div>
+
+  <div class="collection-grid">
+
+    <!-- Edition I -->
+    <div class="product-card reveal">
+      <div class="product-card-img-wrap">
+        <img src="frames/frame_0001.jpg" alt="Edition I Classique" class="product-card-img">
+        <div class="product-card-img-overlay"></div>
+      </div>
+      <div class="product-card-body">
+        <div class="product-card-edition">Edition I</div>
+        <div class="product-card-name">Classique</div>
+        <p class="product-card-desc">The origin. White porcelain ballerina on an aged walnut stage — 36-note mechanism, Swan Lake, gilded acanthus ornamentation. The piece that started it all.</p>
+        <div class="product-card-price">HK$ 28,000</div>
+        <div class="product-card-price-note">Free engraving · 5-year warranty</div>
+        <button class="product-card-btn">Reserve</button>
+      </div>
+    </div>
+
+    <!-- Edition II — featured -->
+    <div class="product-card featured-card reveal" style="transition-delay:0.12s">
+      <div class="product-card-img-wrap">
+        <img src="frames/frame_0096.jpg" alt="Edition II Reverie" class="product-card-img">
+        <div class="product-card-img-overlay"></div>
+        <div class="product-card-badge">Most Loved</div>
+      </div>
+      <div class="product-card-body">
+        <div class="product-card-edition">Edition II</div>
+        <div class="product-card-name">Reverie</div>
+        <p class="product-card-desc">Two melodies. A hand-dyed silk tutu. Premium deep-grain walnut with enhanced mechanism. The most desired piece in our collection, reserved for those who demand more.</p>
+        <div class="product-card-price">HK$ 58,000</div>
+        <div class="product-card-price-note">White glove delivery · Extended engraving</div>
+        <button class="product-card-btn">Reserve</button>
+      </div>
+    </div>
+
+    <!-- Edition III -->
+    <div class="product-card reveal" style="transition-delay:0.22s">
+      <div class="product-card-img-wrap">
+        <img src="frames/frame_0180.jpg" alt="Edition III Bespoke" class="product-card-img">
+        <div class="product-card-img-overlay"></div>
+      </div>
+      <div class="product-card-body">
+        <div class="product-card-edition">Edition III</div>
+        <div class="product-card-name">Bespoke</div>
+        <p class="product-card-desc">A private commission. Your wood, your melody, your dancer. A singular work of art designed in dialogue between you and our master craftsman over twelve weeks.</p>
+        <div class="product-card-price">HK$ 120,000+</div>
+        <div class="product-card-price-note">Personal atelier consultation · Lifetime care</div>
+        <button class="product-card-btn">Enquire</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── PRICING SECTION ────────────────────────────────── -->
+<section id="pricing">
+
+  <div class="pricing-header">
+    <span class="sec-tag reveal">Select Your Piece</span>
+    <h2 class="reveal" style="transition-delay:0.1s">Every Story Deserves<br><em>Its Own Chapter</em></h2>
+    <p class="pricing-sub reveal" style="transition-delay:0.18s">All editions are handcrafted to order. Greyed features are not included in that tier — upgrade anytime before production begins.</p>
+  </div>
+
+  <div class="pricing-cards">
+
+    <!-- Tier 1 — Classique -->
+    <div class="pricing-card reveal">
+      <div class="pc-edition">I</div>
+      <div class="pc-name">Classique</div>
+      <div class="pc-ballerina">White Tutu · Porcelain</div>
+      <div class="pc-price">HK$ 28,000</div>
+      <div class="pc-price-note">Free engraving included</div>
+      <ul class="pc-features">
+        <li>White porcelain ballerina</li>
+        <li>Aged walnut exterior</li>
+        <li>36-note Swiss mechanism</li>
+        <li>Swan Lake (Tchaikovsky)</li>
+        <li>Velvet presentation box</li>
+        <li>Certificate of authenticity</li>
+        <li>Standard engraving (20 chars)</li>
+        <li>5-year warranty</li>
+        <li class="not-included">Leather & velvet case</li>
+        <li class="not-included">Second melody</li>
+        <li class="not-included">White glove delivery</li>
+        <li class="not-included">Private atelier visit</li>
+      </ul>
+      <button class="pc-btn">Reserve</button>
+    </div>
+
+    <!-- Tier 2 — Reverie (featured) -->
+    <div class="pricing-card featured reveal" style="transition-delay:0.12s">
+      <div class="pc-badge">Most Loved</div>
+      <div class="pc-edition">II</div>
+      <div class="pc-name">Reverie</div>
+      <div class="pc-ballerina">Blue Silk Tutu · Hand-Dyed</div>
+      <div class="pc-price">HK$ 58,000</div>
+      <div class="pc-price-note">White glove delivery included</div>
+      <ul class="pc-features">
+        <li>Blue silk-tutu ballerina (hand-dyed)</li>
+        <li>Premium walnut, deep-grain select</li>
+        <li>36-note Swiss mechanism</li>
+        <li>Swan Lake + Clair de Lune</li>
+        <li>Leather & velvet presentation case</li>
+        <li>Numbered certificate + COA booklet</li>
+        <li>Extended engraving (40 chars)</li>
+        <li>5-year warranty + priority service</li>
+        <li>White glove delivery service</li>
+        <li class="not-included">Custom melody commission</li>
+        <li class="not-included">Private atelier visit</li>
+        <li class="not-included">Lifetime maintenance</li>
+      </ul>
+      <button class="pc-btn featured-btn">Reserve</button>
+    </div>
+
+    <!-- Tier 3 — Bespoke -->
+    <div class="pricing-card reveal" style="transition-delay:0.22s">
+      <div class="pc-edition">✦</div>
+      <div class="pc-name">Bespoke</div>
+      <div class="pc-ballerina">Custom Commission</div>
+      <div class="pc-price">HK$ 120,000+</div>
+      <div class="pc-price-note">Personal atelier consultation</div>
+      <ul class="pc-features">
+        <li>Custom ballerina design & dress</li>
+        <li>Choice of exotic wood species</li>
+        <li>36-note Swiss mechanism</li>
+        <li>Bespoke melody arrangement</li>
+        <li>Platinum certificate + archival case</li>
+        <li>Unlimited engraving & personalization</li>
+        <li>White glove delivery service</li>
+        <li>Bespoke display cabinet commission</li>
+        <li>Private atelier visit in Lyon</li>
+        <li>Lifetime maintenance programme</li>
+        <li>Direct access to master craftsman</li>
+        <li>Custom melody commission</li>
+      </ul>
+      <button class="pc-btn">Enquire</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS SECTION ───────────────────────────── -->
+<section id="testimonials">
+
+  <div class="testimonials-header">
+    <span class="sec-tag reveal">Collector Voices</span>
+    <h2 class="reveal" style="transition-delay:0.1s">Heard Around<br><em>the World</em></h2>
+  </div>
+
+  <div class="testimonials-grid">
+
+    <div class="testimonial-card reveal">
+      <span class="testimonial-quote-mark">"</span>
+      <p class="testimonial-text">The Reverie sits on my mantelpiece in the 7th arrondissement. Every evening, I wind it. Every evening, it reminds me why craft still matters in a world of reproductions.</p>
+      <div class="testimonial-stars">★★★★★</div>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">M</div>
+        <div>
+          <div class="testimonial-name">Marguerite Fontaine</div>
+          <div class="testimonial-location">Paris, France · Edition II Reverie</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="testimonial-card reveal" style="transition-delay:0.12s">
+      <span class="testimonial-quote-mark">"</span>
+      <p class="testimonial-text">I commissioned the Bespoke for my daughter's eighteenth birthday. Aurea spent four weeks understanding her story. The result moved her to tears — and it moved me as well.</p>
+      <div class="testimonial-stars">★★★★★</div>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">J</div>
+        <div>
+          <div class="testimonial-name">James Whitmore</div>
+          <div class="testimonial-location">London, United Kingdom · Bespoke</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="testimonial-card reveal" style="transition-delay:0.22s">
+      <span class="testimonial-quote-mark">"</span>
+      <p class="testimonial-text">我在香港的收藏中有許多名貴工藝品，但 Aurea 的 Classique 是唯一一件讓我每次打開都感到呼吸一窒的作品。純粹的工藝，純粹的美。</p>
+      <div class="testimonial-stars">★★★★★</div>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">陳</div>
+        <div>
+          <div class="testimonial-name">陳立恆</div>
+          <div class="testimonial-location">Hong Kong · Edition I Classique</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── FAQ SECTION ────────────────────────────────────── -->
+<section id="faq">
+
+  <div class="faq-header">
+    <span class="sec-tag reveal">Questions & Answers</span>
+    <h2 class="reveal" style="transition-delay:0.1s">Everything You<br><em>Need to Know</em></h2>
+  </div>
+
+  <div class="faq-list reveal" style="transition-delay:0.12s">
+
+    <div class="faq-item open">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        How long does production take from reservation to delivery?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-answer" style="max-height:200px">
+        <div class="faq-answer-inner">Each Aurea music box is handcrafted entirely to order. The Classique and Reverie editions require 8–12 weeks from the moment your reservation is confirmed. Bespoke commissions begin with a private consultation and typically take 14–18 weeks depending on the complexity of your brief. We will communicate every milestone to you directly.</div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Can I choose a different melody for my music box?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">The Classique plays Swan Lake (Tchaikovsky). The Reverie adds Clair de Lune (Debussy) as a second melody. For the Bespoke commission, we work with our in-house arranger to transcribe any melody you wish — from a lullaby you remember to a contemporary composition. Custom melody arrangement is included in the Bespoke price.</div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What does the personalized engraving service include?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">The Classique includes standard engraving up to 20 characters on the wind-key plaque. The Reverie extends this to 40 characters with a choice of three calligraphic fonts. Bespoke commissions include unlimited engraving across multiple surfaces — the lid interior, the base, and the mechanism plate. All engravings are hand-cut by our master engraver.</div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Do you offer international shipping and white glove delivery?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">We ship to 28 countries worldwide. The Reverie and Bespoke editions include white glove delivery — a dedicated courier will bring your piece in its presentation case, oversee unpacking, and demonstrate the winding mechanism in person. For the Classique, we use specialist fine-art shipping partners with full insurance and climate-controlled transit.</div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What maintenance does a music box require over time?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">All Aurea pieces include a 5-year warranty covering mechanism and finish. We recommend light waxing of the walnut exterior once per year using our included care kit. The mechanism requires no lubrication for the first ten years under normal use. Should any service be required, we offer a complimentary collection and return service during the warranty period. Bespoke editions include lifetime maintenance.</div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Is it possible to visit the atelier in Lyon before ordering?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">Private atelier visits are available exclusively for Bespoke commission clients. During your visit, you will meet the master craftsman assigned to your piece, review material samples, choose your wood from our aged stock, and discuss the full scope of your commission. Visits are by appointment only and typically last a full afternoon. Travel arrangements can be assisted by our client concierge team.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── CTA SECTION ───────────────────────────────────── -->
+<section id="cta">
+  <span class="sep-line"></span>
+  <span class="cta-tag reveal">Own the Exceptional</span>
+  <div class="cta-price reveal" style="transition-delay:0.08s">¥ 28,800</div>
+  <span class="cta-price-sub reveal" style="transition-delay:0.12s">Starting price · Free personalized engraving</span>
+  <h2 class="cta-title reveal" style="transition-delay:0.18s">Begin Your<br><em>Story</em></h2>
+  <p class="cta-body reveal" style="transition-delay:0.24s">
+    Each La Sylphide is handcrafted to order.<br>
+    Production time 8–12 weeks.<br>
+    Limited to 48 pieces annually.
+  </p>
+  <div class="cta-btns reveal" style="transition-delay:0.3s">
+    <button class="btn-prim">Reserve Yours</button>
+    <button class="btn-sec">Request Catalogue</button>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+
+    <div class="footer-brand">
+      <a class="foot-logo" href="#">Aurea</a>
+      <p class="footer-brand-desc">Since 1923, Aurea Atelier has crafted music boxes of extraordinary beauty in our Lyon workshop. Every piece is a singular work — built by hand, meant to last forever.</p>
+      <span class="footer-brand-ornament">Lyon · Paris · Hong Kong</span>
+    </div>
+
+    <div class="footer-col">
+      <span class="footer-col-title">Navigate</span>
+      <ul class="footer-col-links">
+        <li><a href="#scroll-section">Discover</a></li>
+        <li><a href="#about">Our Story</a></li>
+        <li><a href="#collection">Collection</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#testimonials">Reviews</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <span class="footer-col-title">Contact</span>
+      <ul class="footer-col-links">
+        <li><a href="#">Reserve a Piece</a></li>
+        <li><a href="#">Request Catalogue</a></li>
+        <li><a href="#">Atelier Visit</a></li>
+        <li><a href="#">Press Enquiries</a></li>
+        <li><a href="#">Wholesale</a></li>
+        <li><a href="#">After-Sales Service</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <span class="footer-col-title">Follow</span>
+      <ul class="footer-col-links">
+        <li><a href="#">Instagram</a></li>
+        <li><a href="#">Pinterest</a></li>
+        <li><a href="#">WeChat</a></li>
+        <li><a href="#">LINE</a></li>
+        <li><a href="#">Newsletter</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <div class="foot-copy">© 2025 Aurea Atelier · Lyon, France · All Rights Reserved</div>
+    <div class="footer-social">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Authenticity</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ── MUSIC BUTTON ──────────────────────────────────── -->
+<button id="music-btn" onclick="toggleMusic()">
+  ♪
+  <span class="music-tooltip" id="music-tooltip">Play music</span>
+</button>
+
+<!-- ── FIXED SIDE PANEL ──────────────────────────────── -->
+<div id="side-panel">
+  <div class="sp-price-card">
+    <div class="sp-price">¥ 28,800</div>
+    <div class="sp-price-label">Starting price</div>
+  </div>
+  <button class="sp-btn gold">
+    <span class="sp-icon">◈</span> Reserve
+  </button>
+  <button class="sp-btn">
+    <span class="sp-icon">♡</span> Wishlist
+  </button>
+  <button class="sp-btn">
+    <span class="sp-icon">⇗</span> Share
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════ -->
+<script>
+/* ── Constants ─────────────────────────────────────── */
+const TOTAL  = 192;
+const frames = new Array(TOTAL).fill(null);
+let loaded   = 0;
+
+/* ── DOM refs ──────────────────────────────────────── */
+const loadingEl  = document.getElementById('loading');
+const ldFill     = document.getElementById('ld-fill');
+const ldPct      = document.getElementById('ld-pct');
+const fCanvas    = document.getElementById('frame-canvas');
+const fCtx       = fCanvas.getContext('2d');
+const pCanvas    = document.getElementById('particle-canvas');
+const pCtx       = pCanvas.getContext('2d');
+const ribbon     = document.getElementById('scroll-ribbon');
+const hint       = document.getElementById('scroll-hint');
+const sidePanel  = document.getElementById('side-panel');
+const scrollSec  = document.getElementById('scroll-section');
+
+/* ── Canvas sizing ─────────────────────────────────── */
+function resize() {
+  fCanvas.width  = pCanvas.width  = window.innerWidth;
+  fCanvas.height = pCanvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+/* ── Frame loading ─────────────────────────────────── */
+function pad(n) { return String(n).padStart(4, '0'); }
+
+function loadOne(i) {
+  const img = new Image();
+  img.onload = () => {
+    frames[i] = img;
+    loaded++;
+    const pct = Math.round(loaded / TOTAL * 100);
+    ldFill.style.width  = pct + '%';
+    ldPct.textContent   = pct + '%';
+    if (loaded === TOTAL) setTimeout(() => loadingEl.classList.add('out'), 450);
+  };
+  img.onerror = () => { loaded++; };
+  img.src = `frames/frame_${pad(i)}.jpg`;
+}
+
+/* Load first 24 immediately so hero is ready */
+for (let i = 0; i < 24; i++) loadOne(i);
+
+/* Rest via idle callbacks for smooth startup */
+(function loadRest() {
+  let idx = 24;
+  const batch = () => {
+    const end = Math.min(idx + 12, TOTAL);
+    for (let i = idx; i < end; i++) loadOne(i);
+    idx = end;
+    if (idx < TOTAL) {
+      if (typeof requestIdleCallback !== 'undefined')
+        requestIdleCallback(batch, { timeout: 400 });
+      else
+        setTimeout(batch, 60);
+    }
+  };
+  if (typeof requestIdleCallback !== 'undefined')
+    requestIdleCallback(batch, { timeout: 200 });
+  else
+    setTimeout(batch, 80);
+})();
+
+/* ── Frame rendering ───────────────────────────────── */
+function drawFrame(idx) {
+  idx = Math.max(0, Math.min(TOTAL - 1, idx));
+
+  /* Find nearest loaded frame if this one isn't ready */
+  let img = frames[idx];
+  if (!img) {
+    for (let d = 1; d < 30; d++) {
+      if (idx - d >= 0    && frames[idx - d]) { img = frames[idx - d]; break; }
+      if (idx + d < TOTAL && frames[idx + d]) { img = frames[idx + d]; break; }
+    }
+  }
+  if (!img) {
+    fCtx.fillStyle = '#060402';
+    fCtx.fillRect(0, 0, fCanvas.width, fCanvas.height);
+    return;
+  }
+
+  const cw = fCanvas.width, ch = fCanvas.height;
+  const iw = img.naturalWidth, ih = img.naturalHeight;
+  const scale = Math.max(cw / iw, ch / ih);
+  const sw = iw * scale, sh = ih * scale;
+  fCtx.clearRect(0, 0, cw, ch);
+  fCtx.drawImage(img, (cw - sw) / 2, (ch - sh) / 2, sw, sh);
+}
+
+/* ── Particles ─────────────────────────────────────── */
+const PCNT = 55;
+
+function mkPart() {
+  return {
+    x:    Math.random() * (pCanvas.width  || 1280),
+    y:    pCanvas.height + 8,
+    vx:   (Math.random() - 0.5) * 0.45,
+    vy:   -(Math.random() * 0.55 + 0.18),
+    r:    Math.random() * 1.4 + 0.3,
+    op:   Math.random() * 0.38 + 0.06,
+    life: 0,
+    max:  Math.random() * 0.35 + 0.65,
+  };
+}
+
+const parts = Array.from({ length: PCNT }, mkPart);
+/* Scatter initial y positions */
+parts.forEach(p => { p.y = Math.random() * pCanvas.height; p.life = Math.random() * p.max; });
+
+function resetPart(p) {
+  p.x    = Math.random() * pCanvas.width;
+  p.y    = pCanvas.height + 8;
+  p.vx   = (Math.random() - 0.5) * 0.45;
+  p.vy   = -(Math.random() * 0.55 + 0.18);
+  p.r    = Math.random() * 1.4 + 0.3;
+  p.op   = Math.random() * 0.38 + 0.06;
+  p.life = 0;
+  p.max  = Math.random() * 0.35 + 0.65;
+}
+
+function tickParticles(scrollProg) {
+  pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+  /* More visible when product is opening */
+  const intensity = 0.3 + scrollProg * 0.7;
+
+  for (const p of parts) {
+    p.life += 0.0028;
+    p.x    += p.vx;
+    p.y    += p.vy;
+    if (p.life > p.max || p.y < -8) resetPart(p);
+
+    const t    = p.life / p.max;
+    const fade = t < 0.15 ? t / 0.15 : t > 0.78 ? (1 - t) / 0.22 : 1;
+    pCtx.globalAlpha = p.op * fade * intensity;
+    pCtx.fillStyle   = '#c8982a';
+    pCtx.beginPath();
+    pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    pCtx.fill();
+  }
+  pCtx.globalAlpha = 1;
+}
+
+/* ── Scroll state ──────────────────────────────────── */
+let scrollProg  = 0;   /* smoothed  */
+let targetProg  = 0;   /* raw       */
+let displayFrm  = 0;   /* smoothed frame index */
+let scrolled    = false;
+
+window.addEventListener('scroll', () => {
+  const rect  = scrollSec.getBoundingClientRect();
+  const top   = -rect.top;
+  const total = rect.height - window.innerHeight;
+  targetProg  = Math.max(0, Math.min(1, top / total));
+
+  if (!scrolled && targetProg > 0.008) {
+    scrolled = true;
+    hint.classList.add('gone');
+  }
+}, { passive: true });
+
+/* ── Text stages ───────────────────────────────────── */
+const STAGES = [
+  { el: document.getElementById('s0'), from: 0.00, peak: 0.07, to: 0.17 },
+  { el: document.getElementById('s1'), from: 0.19, peak: 0.27, to: 0.39 },
+  { el: document.getElementById('s2'), from: 0.41, peak: 0.51, to: 0.62 },
+  { el: document.getElementById('s3'), from: 0.64, peak: 0.73, to: 0.83 },
+  { el: document.getElementById('s4'), from: 0.85, peak: 0.91, to: 0.99 },
+];
+
+function easeOut(t) { return 1 - (1 - t) * (1 - t); }
+function easeIn(t)  { return t * t; }
+
+function updateStages(p) {
+  for (const s of STAGES) {
+    let opacity = 0, ty = 22;
+
+    if (p >= s.from && p <= s.to) {
+      if (p < s.peak) {
+        const t = (p - s.from) / (s.peak - s.from);
+        opacity = easeOut(Math.max(0, t));
+        ty = 22 * (1 - easeOut(t));
+      } else {
+        const fadeStart = s.to - (s.to - s.peak) * 0.45;
+        if (p <= fadeStart) {
+          opacity = 1; ty = 0;
+        } else {
+          const t = (p - fadeStart) / (s.to - fadeStart);
+          opacity = 1 - easeIn(t);
+          ty = -12 * easeIn(t);
+        }
+      }
+    }
+
+    s.el.style.opacity = opacity;
+    if (s.el.id === 's4') {
+      s.el.style.transform = `translateX(-50%) translateY(${ty}px)`;
+    } else {
+      s.el.style.transform = `translateY(${ty}px)`;
+    }
+  }
+}
+
+/* ── Section reveal (IntersectionObserver) ─────────── */
+const revealEls = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  });
+}, { threshold: 0.12 });
+revealEls.forEach(el => io.observe(el));
+
+/* ── Side panel visibility ─────────────────────────── */
+function updateSidePanel(p) {
+  if (p > 0.04 && p < 0.94) {
+    sidePanel.classList.add('visible');
+  } else {
+    sidePanel.classList.remove('visible');
+  }
+}
+
+/* ── Lerp helper ───────────────────────────────────── */
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+/* ── Main RAF loop ─────────────────────────────────── */
+function loop() {
+  requestAnimationFrame(loop);
+
+  scrollProg = lerp(scrollProg, targetProg, 0.11);
+
+  const targetFrm = scrollProg * (TOTAL - 1);
+  displayFrm = lerp(displayFrm, targetFrm, 0.22);
+  drawFrame(Math.round(displayFrm));
+
+  tickParticles(scrollProg);
+
+  ribbon.style.height = (scrollProg * 100) + '%';
+  updateStages(scrollProg);
+  updateSidePanel(scrollProg);
+}
+
+requestAnimationFrame(loop);
+
+/* ══════════════════════════════════════════════════════
+   MUSIC BOX SYNTHESIS — Swan Lake (Web Audio API)
+══════════════════════════════════════════════════════ */
+let audioCtx   = null;
+let masterGain = null;
+let reverbIn   = null;
+let musicOn    = false;
+let schedTimer = null;
+let nextBeat   = 0;
+let noteIdx    = 0;
+
+const BPM  = 54;
+const Q    = 60 / BPM;         // quarter note ~1.11s
+const E    = Q / 2;
+const H    = Q * 2;
+const DQ   = Q * 1.5;
+const DH   = Q * 3;
+
+/* Swan Lake "Scene" — Act II, simplified music-box arrangement */
+/* Each entry: [frequency_Hz | null, duration_seconds]         */
+const SWAN = [
+  /* Phrase A — descending motif */
+  [659.25, Q ], [587.33, E ], [523.25, E ], [493.88, Q ], [440.00, Q ],
+  [440.00, DH], [null,   Q ],
+  /* Phrase B — ascending response */
+  [440.00, E ], [493.88, E ], [523.25, Q ], [587.33, Q ],
+  [659.25, DH], [null,   Q ],
+  /* Phrase C — repeat descent */
+  [659.25, Q ], [587.33, Q ], [523.25, Q ], [493.88, Q ],
+  [440.00, DH], [null,   Q ],
+  /* Phrase D — lower resolution */
+  [392.00, Q ], [440.00, E ], [493.88, E ], [523.25, Q ], [440.00, Q ],
+  [392.00, DH], [null,   H ],
+  /* Phrase E — bridge */
+  [523.25, Q ], [493.88, E ], [440.00, E ], [493.88, Q ], [523.25, Q ],
+  [587.33, DH], [null,   Q ],
+  /* Phrase F — final sweep */
+  [659.25, Q ], [587.33, E ], [523.25, E ], [493.88, Q ], [440.00, Q ],
+  [440.00, H*2], [null,   H ],
+];
+
+function initAudio() {
+  if (audioCtx) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  audioCtx   = new AC();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+
+  /* Simple box-resonance reverb: delay feedback loop */
+  const delay    = audioCtx.createDelay(1.0);
+  const fbGain   = audioCtx.createGain();
+  const wetGain  = audioCtx.createGain();
+  delay.delayTime.value = 0.17;
+  fbGain.gain.value     = 0.28;
+  wetGain.gain.value    = 0.20;
+
+  masterGain.connect(delay);
+  delay.connect(fbGain);
+  fbGain.connect(delay);
+  delay.connect(wetGain);
+  wetGain.connect(audioCtx.destination);
+  masterGain.connect(audioCtx.destination);
+
+  reverbIn = delay;
+}
+
+/* Pluck one music-box tine: primary sine + detuned harmonic */
+function pluck(freq, t) {
+  if (!freq) return;
+
+  /* Fundamental */
+  const o1 = audioCtx.createOscillator();
+  const g1 = audioCtx.createGain();
+  o1.type = 'sine';
+  o1.frequency.setValueAtTime(freq, t);
+  g1.gain.setValueAtTime(0, t);
+  g1.gain.linearRampToValueAtTime(0.30, t + 0.004);
+  g1.gain.exponentialRampToValueAtTime(0.0001, t + 2.4);
+  o1.connect(g1); g1.connect(masterGain);
+  o1.start(t); o1.stop(t + 2.8);
+
+  /* Upper partial — gives the metallic "tine" quality */
+  const o2 = audioCtx.createOscillator();
+  const g2 = audioCtx.createGain();
+  o2.type = 'sine';
+  o2.frequency.setValueAtTime(freq * 2.756, t);
+  g2.gain.setValueAtTime(0, t);
+  g2.gain.linearRampToValueAtTime(0.065, t + 0.002);
+  g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+  o2.connect(g2); g2.connect(masterGain);
+  o2.start(t); o2.stop(t + 1.0);
+}
+
+/* Scheduler: fills a rolling 300ms lookahead window */
+function scheduleMelody() {
+  while (nextBeat < audioCtx.currentTime + 0.3) {
+    const [freq, dur] = SWAN[noteIdx];
+    pluck(freq, nextBeat);
+    nextBeat += dur;
+    noteIdx = (noteIdx + 1) % SWAN.length;
+  }
+}
+
+function startMusic() {
+  initAudio();
+  audioCtx.resume();
+  musicOn  = true;
+  noteIdx  = 0;
+  nextBeat = audioCtx.currentTime + 0.15;
+
+  masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+  masterGain.gain.setValueAtTime(masterGain.gain.value, audioCtx.currentTime);
+  masterGain.gain.linearRampToValueAtTime(1.0, audioCtx.currentTime + 1.8);
+
+  scheduleMelody();
+  schedTimer = setInterval(scheduleMelody, 25);
+
+  const btn = document.getElementById('music-btn');
+  const tip = document.getElementById('music-tooltip');
+  if (btn) btn.classList.add('playing');
+  if (tip) tip.textContent = 'Mute music';
+}
+
+function stopMusic() {
+  musicOn = false;
+  if (schedTimer) { clearInterval(schedTimer); schedTimer = null; }
+  if (masterGain && audioCtx) {
+    masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+    masterGain.gain.setValueAtTime(masterGain.gain.value, audioCtx.currentTime);
+    masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.2);
+  }
+  const btn = document.getElementById('music-btn');
+  const tip = document.getElementById('music-tooltip');
+  if (btn) btn.classList.remove('playing');
+  if (tip) tip.textContent = 'Play music';
+}
+
+function toggleMusic() {
+  if (musicOn) stopMusic(); else startMusic();
+}
+
+/* ── Auto-start: init on load, play on first gesture ── */
+window.addEventListener('load', () => {
+  try { initAudio(); } catch(e) { return; } // AudioContext may need gesture on iOS
+
+  musicOn = true;
+  const btn = document.getElementById('music-btn');
+  const tip = document.getElementById('music-tooltip');
+  if (btn) btn.classList.add('playing');
+  if (tip) tip.textContent = 'Mute music';
+});
+
+function onFirstGesture() {
+  if (!audioCtx || !musicOn || schedTimer) return;
+  audioCtx.resume().then(() => {
+    if (!musicOn || schedTimer) return;
+    noteIdx  = 0;
+    nextBeat = audioCtx.currentTime + 0.2;
+    masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+    masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+    masterGain.gain.linearRampToValueAtTime(1.0, audioCtx.currentTime + 2.0);
+    scheduleMelody();
+    schedTimer = setInterval(scheduleMelody, 25);
+  });
+  ['click','scroll','touchstart','keydown'].forEach(e =>
+    document.removeEventListener(e, onFirstGesture));
+}
+
+['click','scroll','touchstart','keydown'].forEach(e =>
+  document.addEventListener(e, onFirstGesture, { passive: true }));
+
+/* ── FAQ accordion ─────────────────────────────────── */
+function toggleFaq(btn) {
+  const item   = btn.closest('.faq-item');
+  const answer = item.querySelector('.faq-answer');
+  const isOpen = item.classList.contains('open');
+
+  /* Close all */
+  document.querySelectorAll('.faq-item.open').forEach(el => {
+    el.classList.remove('open');
+    el.querySelector('.faq-answer').style.maxHeight = '0';
+  });
+
+  /* Open clicked if it was closed */
+  if (!isOpen) {
+    item.classList.add('open');
+    answer.style.maxHeight = answer.scrollHeight + 'px';
+  }
+}
+
+/* Set initial open item height */
+document.querySelectorAll('.faq-item.open .faq-answer').forEach(el => {
+  el.style.maxHeight = el.scrollHeight + 'px';
+});
+</script>
+</body>
+</html>

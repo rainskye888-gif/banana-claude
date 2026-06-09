@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($license = \\(Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/anthropics/skills/main/skills/frontend-design/LICENSE.txt\" -UseBasicParsing\\).Content; $license | Out-File -FilePath \"d:\\\\AI\\\\Claude Code\\\\Web\\\\Nano Banana 2 + Claude Code\\\\.claude\\\\skills\\\\frontend-design\\\\LICENSE.txt\" -Encoding utf8; Write-Host \"Done\")",
+      "PowerShell(try { $v = & ffmpeg -version 2>&1 | Select-Object -First 1; Write-Output \"ffmpeg found: $v\" } catch { Write-Output \"ffmpeg not found\" })",
+      "PowerShell(python --version)",
+      "PowerShell(python -c \"import cv2; print\\('cv2 ok'\\)\" 2>&1)",
+      "PowerShell(python -c \"import imageio; print\\('imageio ok'\\)\" 2>&1)"
+    ]
+  }
+}
